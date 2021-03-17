@@ -348,14 +348,14 @@ class Instagram:
 
         for mediaArray in nodes:
             if index == count:
-                return medias
+                return {'medias': medias, 'end_cursor': max_id}
 
             media = Media(mediaArray['node'])
             medias.append(media)
             index += 1
 
         if not nodes or nodes == '':
-            return medias
+            return {'medias': medias, 'end_cursor': max_id}
 
         max_id = \
             arr['data']['user']['edge_owner_to_timeline_media'][
@@ -546,21 +546,21 @@ class Instagram:
         nodes = arr['graphql']['hashtag']['edge_hashtag_to_media']['edges']
         for media_array in nodes:
             if index == count:
-                return medias
+                return {'medias': medias, 'end_cursor': max_id}
             media = Media(media_array['node'])
             if media.identifier in media_ids:
-                return medias
+                return {'medias': medias, 'end_cursor': max_id}
 
             if min_timestamp is not None \
                     and media.created_time < min_timestamp:
-                return medias
+                return {'medias': medias, 'end_cursor': max_id}
 
             media_ids.append(media.identifier)
             medias.append(media)
             index += 1
 
         if len(nodes) == 0:
-            return medias
+            return {'medias': medias, 'end_cursor': max_id}
 
         max_id = \
             arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
