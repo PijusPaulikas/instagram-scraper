@@ -525,51 +525,51 @@ class Instagram:
         medias = []
         media_ids = []
         has_next_page = True
-        while index < count and has_next_page:
 
-            time.sleep(self.sleep_between_requests)
-            response = self.__req.get(
-                endpoints.get_medias_json_by_tag_link(tag, max_id),
-                headers=self.generate_headers(self.user_session))
 
-            if response.status_code != Instagram.HTTP_OK:
-                raise InstagramException.default(response.text,
-                                                 response.status_code)
+        time.sleep(self.sleep_between_requests)
+        response = self.__req.get(
+            endpoints.get_medias_json_by_tag_link(tag, max_id),
+            headers=self.generate_headers(self.user_session))
 
-            arr = response.json()
+        if response.status_code != Instagram.HTTP_OK:
+            raise InstagramException.default(response.text,
+                                                response.status_code)
 
-            try:
-                arr['graphql']['hashtag']['edge_hashtag_to_media']['count']
-            except KeyError:
-                return []
+        arr = response.json()
 
-            nodes = arr['graphql']['hashtag']['edge_hashtag_to_media']['edges']
-            for media_array in nodes:
-                if index == count:
-                    return medias
-                media = Media(media_array['node'])
-                if media.identifier in media_ids:
-                    return medias
+        try:
+            arr['graphql']['hashtag']['edge_hashtag_to_media']['count']
+        except KeyError:
+            return []
 
-                if min_timestamp is not None \
-                        and media.created_time < min_timestamp:
-                    return medias
-
-                media_ids.append(media.identifier)
-                medias.append(media)
-                index += 1
-
-            if len(nodes) == 0:
+        nodes = arr['graphql']['hashtag']['edge_hashtag_to_media']['edges']
+        for media_array in nodes:
+            if index == count:
+                return medias
+            media = Media(media_array['node'])
+            if media.identifier in media_ids:
                 return medias
 
-            max_id = \
-                arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
-                    'end_cursor']
-            has_next_page = \
-                arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
-                    'has_next_page']
+            if min_timestamp is not None \
+                    and media.created_time < min_timestamp:
+                return medias
 
-        return medias
+            media_ids.append(media.identifier)
+            medias.append(media)
+            index += 1
+
+        if len(nodes) == 0:
+            return medias
+
+        max_id = \
+            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
+                'end_cursor']
+        has_next_page = \
+            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
+                'has_next_page']
+
+        return {'medias': medias, 'end_cursor': max_id}
 
     def get_medias_by_location_id(self, facebook_location_id, count=24,
                                   max_id=''):
