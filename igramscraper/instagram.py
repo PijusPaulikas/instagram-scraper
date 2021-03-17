@@ -339,6 +339,14 @@ class Instagram:
                                                 response.status_code)
 
         arr = json.loads(response.text)
+        max_id = \
+            arr['data']['user']['edge_owner_to_timeline_media'][
+                'page_info'][
+                'end_cursor']
+        is_more_available = \
+            arr['data']['user']['edge_owner_to_timeline_media'][
+                'page_info'][
+                'has_next_page']
 
         try:
             nodes = arr['data']['user']['edge_owner_to_timeline_media'][
@@ -357,14 +365,7 @@ class Instagram:
         if not nodes or nodes == '':
             return {'medias': medias, 'end_cursor': max_id}
 
-        max_id = \
-            arr['data']['user']['edge_owner_to_timeline_media'][
-                'page_info'][
-                'end_cursor']
-        is_more_available = \
-            arr['data']['user']['edge_owner_to_timeline_media'][
-                'page_info'][
-                'has_next_page']
+        
 
         return {'medias': medias, 'end_cursor': max_id}
 
@@ -537,6 +538,12 @@ class Instagram:
                                                 response.status_code)
 
         arr = response.json()
+        max_id = \
+            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
+                'end_cursor']
+        has_next_page = \
+            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
+                'has_next_page']
 
         try:
             arr['graphql']['hashtag']['edge_hashtag_to_media']['count']
@@ -562,12 +569,7 @@ class Instagram:
         if len(nodes) == 0:
             return {'medias': medias, 'end_cursor': max_id}
 
-        max_id = \
-            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
-                'end_cursor']
-        has_next_page = \
-            arr['graphql']['hashtag']['edge_hashtag_to_media']['page_info'][
-                'has_next_page']
+        
 
         return {'medias': medias, 'end_cursor': max_id}
 
