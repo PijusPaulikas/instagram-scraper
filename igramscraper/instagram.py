@@ -310,63 +310,63 @@ class Instagram:
         """
         :param id: instagram account id
         :param count: the number of how many media you want to get
-        :param max_id: used to paginate
+        :param max_id: used to paginate (end_cursor)
         :return: list of Media
         """
         index = 0
         medias = []
         is_more_available = True
 
-        while index < count and is_more_available:
 
-            variables = {
-                'id': str(id),
-                'first': str(count),
-                'after': str(max_id)
-            }
 
-            headers = self.generate_headers(self.user_session,
-                                            self.__generate_gis_token(
-                                                variables))
+        variables = {
+            'id': str(id),
+            'first': str(count),
+            'after': str(max_id)
+        }
 
-            time.sleep(self.sleep_between_requests)
-            response = self.__req.get(
-                endpoints.get_account_medias_json_link(variables),
-                headers=headers)
+        headers = self.generate_headers(self.user_session,
+                                        self.__generate_gis_token(
+                                            variables))
 
-            if not Instagram.HTTP_OK == response.status_code:
-                raise InstagramException.default(response.text,
-                                                 response.status_code)
+        time.sleep(self.sleep_between_requests)
+        response = self.__req.get(
+            endpoints.get_account_medias_json_link(variables),
+            headers=headers)
 
-            arr = json.loads(response.text)
+        if not Instagram.HTTP_OK == response.status_code:
+            raise InstagramException.default(response.text,
+                                                response.status_code)
 
-            try:
-                nodes = arr['data']['user']['edge_owner_to_timeline_media'][
-                    'edges']
-            except KeyError:
-                return {}
+        arr = json.loads(response.text)
 
-            for mediaArray in nodes:
-                if index == count:
-                    return medias
+        try:
+            nodes = arr['data']['user']['edge_owner_to_timeline_media'][
+                'edges']
+        except KeyError:
+            return {}
 
-                media = Media(mediaArray['node'])
-                medias.append(media)
-                index += 1
-
-            if not nodes or nodes == '':
+        for mediaArray in nodes:
+            if index == count:
                 return medias
 
-            max_id = \
-                arr['data']['user']['edge_owner_to_timeline_media'][
-                    'page_info'][
-                    'end_cursor']
-            is_more_available = \
-                arr['data']['user']['edge_owner_to_timeline_media'][
-                    'page_info'][
-                    'has_next_page']
+            media = Media(mediaArray['node'])
+            medias.append(media)
+            index += 1
 
-        return medias
+        if not nodes or nodes == '':
+            return medias
+
+        max_id = \
+            arr['data']['user']['edge_owner_to_timeline_media'][
+                'page_info'][
+                'end_cursor']
+        is_more_available = \
+            arr['data']['user']['edge_owner_to_timeline_media'][
+                'page_info'][
+                'has_next_page']
+
+        return {'medias': medias, 'end_cursor': max_id}
 
     def get_tagged_medias_by_user_id(self, id, count=12, max_id=''):
         """
